@@ -60,7 +60,7 @@ export const createTrip = CatchAsyncError(
 export const changeTripBus = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { oldBusId, newBusId, tripId } = req.body;
+      const { newBusId, tripId } = req.body;
 
       //is trip id is available
       const getTrip = await tripModel.findOne({ _id: tripId });
@@ -70,27 +70,12 @@ export const changeTripBus = CatchAsyncError(
           .json({ success: false, message: "Trip not found" });
 
       const selectedOldBusInfo = await busModel.findOne({
-        _id: oldBusId,
+        _id: getTrip.busId,
       });
       if (!selectedOldBusInfo)
         return res
           .status(400)
           .json({ success: false, message: "Bus not found" });
-
-      if (!selectedOldBusInfo.isAvailableForTrip)
-        return res
-          .status(400)
-          .json({ success: false, message: "Bus is not fit" });
-
-      if (selectedOldBusInfo.isTripBooked)
-        return res
-          .status(400)
-          .json({ success: false, message: "Bus is already booked for trip" });
-
-      await busModel.findByIdAndUpdate(
-        { _id: oldBusId },
-        { $set: { isTripBooked: false } }
-      );
 
       const selectedNewBusInfo = await busModel.findOne({
         _id: newBusId,
@@ -114,6 +99,11 @@ export const changeTripBus = CatchAsyncError(
       await busModel.findByIdAndUpdate(
         { _id: newBusId },
         { $set: { isTripBooked: true } }
+      );
+
+      await busModel.findByIdAndUpdate(
+        { _id: getTrip.busId },
+        { $set: { isTripBooked: false } }
       );
 
       getTrip.busId = newBusId;
@@ -143,6 +133,26 @@ export const bookSeat = CatchAsyncError(
       getTrip.save();
 
       return res.status(200).json({ success: true, message: "Success" });
+    } catch (err: any) {
+      return next(new ErrorHandler(err.message, 400));
+    }
+  }
+);
+
+//get booked seat info
+export const getPassengers = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { tripId } = req.body;
+      const tripInfo = await tripModel.findOne({ _id: tripId });
+      if (!tripInfo)
+        return res
+          .status(400)
+          .json({ success: false, message: "Trip not found" });
+
+      return res
+        .status(200)
+        .json({ success: true, passengers: tripInfo.passengers });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }

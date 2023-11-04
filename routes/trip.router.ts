@@ -4,6 +4,7 @@ import {
   changeTripBus,
   createTrip,
   deleteTrip,
+  getPassengers,
   getTrips,
 } from "../controllers/trip.controller";
 // import { isAuthenticated } from "../middleware/auth";
@@ -14,6 +15,7 @@ tripRouter.post("/create", createTrip);
 tripRouter.put("/update", createTrip);
 tripRouter.put("/change-trip", changeTripBus);
 tripRouter.delete("/delete", deleteTrip);
-tripRouter.post("/book-seat", bookSeat);
+tripRouter.get("/get-passengers", getPassengers);
+tripRouter.put("/book-seat", bookSeat);
 tripRouter.get("/trip-list", getTrips);
 export default tripRouter;
