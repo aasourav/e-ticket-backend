@@ -20,7 +20,21 @@ export const createRoute = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { name } = req.body as ILocationName;
-      const newRoute = await routeLocationModel.create({ locationName: name });
+
+      //chk is route is already avaiable
+      const getRoute = await routeLocationModel.findOne({
+        locationName: name.toLocaleLowerCase(),
+      });
+
+      if (getRoute) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Route already available" });
+      }
+
+      const newRoute = await routeLocationModel.create({
+        locationName: name.toLocaleLowerCase(),
+      });
       return res.status(201).json({ success: true, newRoute });
     } catch (err) {
       return next(new ErrorHandler(err.message, 400));
