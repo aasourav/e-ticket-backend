@@ -15,7 +15,14 @@ app.use(express.json({ limit: "50mb" }));
 //cookies parser
 app.use(cookieParser());
 // cors origin
-app.use(cors({ origin: process.env.ORIGIN }));
+// app.use(cors({ origin: process.env.ORIGIN }));
+
+const corsOptions = {
+  origin: "http://localhost:3000",
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 //testing api
 app.get("/test", (req: Request, res: Response) => {

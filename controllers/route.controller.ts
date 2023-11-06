@@ -100,3 +100,17 @@ export const getRoutes = CatchAsyncError(
     }
   }
 );
+
+export const getRoute = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { routeName } = req.params;
+      const getRoutes = await routeLocationModel.find({
+        locationName: { $regex: routeName, $options: "i" },
+      });
+      res.status(200).json({ success: true, getRoutes });
+    } catch (err: any) {
+      return next(new ErrorHandler(err.message, 400));
+    }
+  }
+);
