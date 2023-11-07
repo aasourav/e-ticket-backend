@@ -17,5 +17,5 @@ tripRouter.put("/change-trip", changeTripBus);
 tripRouter.delete("/delete", deleteTrip);
 tripRouter.get("/get-passengers", getPassengers);
 tripRouter.put("/book-seat", bookSeat);
-tripRouter.get("/trip-list", getTrips);
+tripRouter.get("/trip-list/from/:from/to/:to", getTrips);
 export default tripRouter;

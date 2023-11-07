@@ -12,11 +12,12 @@ import { CatchAsyncError } from "../middleware/catchAsyncErrors";
 import ErrorHandler from "../utils/ErrorHandler";
 import tripModel, { ITrip } from "../models/trip.model";
 import busModel from "../models/bus.model";
+import routeLocationModel from "../models/routeLocatoin.mode";
 
 export const createTrip = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { busId, from, to, departure_time } = req.body as ITrip;
+      const { busId, fromId, toId, departure_time } = req.body as ITrip;
 
       // check is bus is free for trip and is fit
       const selectedBusInfo = await busModel.findOne({
@@ -37,10 +38,23 @@ export const createTrip = CatchAsyncError(
           .status(400)
           .json({ success: false, message: "Bus is already booked for trip" });
 
+      // check from  and to is available
+      const getFrom = await routeLocationModel.findOne({ _id: fromId });
+      const getTo = await routeLocationModel.findOne({ _id: toId });
+
+      if (!getFrom || !getTo) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Route not found" });
+      }
+
       const createdBus = await tripModel.create({
         busId,
-        from,
-        to,
+        fromId,
+        toId,
+        busName: selectedBusInfo.busName,
+        from: getFrom.locationName,
+        to: getTo.locationName,
         departure_time,
       });
 
@@ -189,9 +203,20 @@ export const deleteTrip = CatchAsyncError(
 );
 
 export const getTrips = CatchAsyncError(
-  async (_req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const getTrips = await tripModel.find();
+      const { from, to } = req.params as { from: string; to: string };
+
+      const getTrips = await tripModel.find({
+        from: from.toLocaleLowerCase(),
+        to: to.toLocaleLowerCase(),
+      });
+
+      if (!getTrips.length)
+        return res
+          .status(400)
+          .json({ success: true, message: "Trip not found" });
+
       return res.status(200).json({ success: true, getTrips });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));

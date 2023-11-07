@@ -23,8 +23,11 @@ const passengersSchema: Schema<IPassengers> = new mongoose.Schema({
 
 export interface ITrip extends Document {
   busId: Types.ObjectId;
-  from: Types.ObjectId;
-  to: Types.ObjectId;
+  fromId: Types.ObjectId;
+  toId: Types.ObjectId;
+  busName: string;
+  from: string;
+  to: string;
   departure_time: Date;
   passengers: IPassengers[];
 }
@@ -34,12 +37,24 @@ const tripSchema: Schema<ITrip> = new mongoose.Schema({
     type: Schema.Types.ObjectId,
     required: true,
   },
-  from: {
+  fromId: {
     type: Schema.Types.ObjectId,
     required: true,
   },
-  to: {
+  toId: {
     type: Schema.Types.ObjectId,
+    required: true,
+  },
+  from: {
+    type: String,
+    required: true,
+  },
+  to: {
+    type: String,
+    required: true,
+  },
+  busName: {
+    type: String,
     required: true,
   },
   departure_time: {
