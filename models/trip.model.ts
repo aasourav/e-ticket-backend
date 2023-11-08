@@ -28,6 +28,8 @@ export interface ITrip extends Document {
   busName: string;
   from: string;
   to: string;
+  price: string;
+  busType: string;
   departure_time: Date;
   passengers: IPassengers[];
 }
@@ -59,6 +61,14 @@ const tripSchema: Schema<ITrip> = new mongoose.Schema({
   },
   departure_time: {
     type: Date,
+    required: true,
+  },
+  price: {
+    type: String,
+    required: true,
+  },
+  busType: {
+    type: String,
     required: true,
   },
   passengers: {

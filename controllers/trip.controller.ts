@@ -17,7 +17,7 @@ import routeLocationModel from "../models/routeLocatoin.mode";
 export const createTrip = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { busId, fromId, toId, departure_time } = req.body as ITrip;
+      const { busId, fromId, toId, departure_time, price } = req.body as ITrip;
 
       // check is bus is free for trip and is fit
       const selectedBusInfo = await busModel.findOne({
@@ -55,6 +55,8 @@ export const createTrip = CatchAsyncError(
         busName: selectedBusInfo.busName,
         from: getFrom.locationName,
         to: getTo.locationName,
+        busType: selectedBusInfo.busType,
+        price,
         departure_time,
       });
 
@@ -217,7 +219,7 @@ export const getTrips = CatchAsyncError(
           .status(400)
           .json({ success: true, message: "Trip not found" });
 
-      return res.status(200).json({ success: true, getTrips });
+      return res.status(200).json(getTrips);
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }
