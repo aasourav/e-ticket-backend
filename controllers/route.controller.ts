@@ -119,10 +119,14 @@ export const getRoute = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { routeName } = req.params;
+      if (routeName === "undefined") {
+        const getAllRoutes = await routeLocationModel.find();
+        return res.status(200).json({ success: true, response: getAllRoutes });
+      }
       const getRoutes = await routeLocationModel.find({
         locationName: { $regex: routeName, $options: "i" },
       });
-      res.status(200).json({ success: true, getRoutes });
+      return res.status(200).json({ success: true, response: getRoutes });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }
