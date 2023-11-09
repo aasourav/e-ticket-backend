@@ -10,9 +10,11 @@
 import { NextFunction, Request, Response } from "express";
 import { CatchAsyncError } from "../middleware/catchAsyncErrors";
 import ErrorHandler from "../utils/ErrorHandler";
-import tripModel, { ITrip } from "../models/trip.model";
+import tripModel, { IPassengers, ITrip } from "../models/trip.model";
 import busModel from "../models/bus.model";
 import routeLocationModel from "../models/routeLocatoin.mode";
+import sendMail from "../utils/sendmail";
+import dayjs from "dayjs";
 
 export const createTrip = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -221,6 +223,67 @@ export const getTrips = CatchAsyncError(
           .json({ success: true, message: "Trip not found" });
 
       return res.status(200).json(getTrips);
+    } catch (err: any) {
+      return next(new ErrorHandler(err.message, 400));
+    }
+  }
+);
+
+//confirm trip
+
+export const confirmTrip = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { tripId, name, email, phone, totalAmount, seatNumbers } = req.body;
+
+      if (
+        !name ||
+        !email ||
+        !phone ||
+        !tripId ||
+        !totalAmount ||
+        !seatNumbers
+      ) {
+        return res.status(400).json({
+          success: true,
+          message: "Please provide all the information",
+        });
+      }
+
+      // is trip id available
+      const getTrip = await tripModel.findOne({ _id: tripId });
+      if (!getTrip) {
+        return res.status(400).json({
+          success: true,
+          message: "Trip not available",
+        });
+      }
+
+      const passenger = {
+        name,
+        phoneNumber: phone,
+        seatNumbers,
+      } as IPassengers;
+
+      getTrip.passengers = [...getTrip.passengers, passenger];
+      getTrip.save();
+
+      await sendMail({
+        email,
+        subject: `${getTrip.busName} ticket`,
+        template: "bus-ticket.ejs",
+        data: {
+          passengerName: name,
+          departureTime: dayjs(getTrip.departure_time).format(
+            "DD MMM, h:mm:ss A"
+          ),
+          seatNumber: seatNumbers?.join(", "),
+          destination: `${getTrip.from} - ${getTrip.to}`,
+          totalAmount,
+        },
+      });
+
+      return res.status(200).json({ success: true });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }

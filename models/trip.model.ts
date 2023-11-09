@@ -1,6 +1,6 @@
 import mongoose, { Document, Model, Schema, Types } from "mongoose";
 
-interface IPassengers extends Document {
+export interface IPassengers extends Document {
   name: string;
   phoneNumber: string;
   seatNumbers: string[];

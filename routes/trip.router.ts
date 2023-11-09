@@ -2,6 +2,7 @@ import express from "express";
 import {
   bookSeat,
   changeTripBus,
+  confirmTrip,
   createTrip,
   deleteTrip,
   getPassengers,
@@ -18,4 +19,5 @@ tripRouter.delete("/delete", deleteTrip);
 tripRouter.get("/get-passengers", getPassengers);
 tripRouter.put("/book-seat", bookSeat);
 tripRouter.get("/trip-list/from/:from/to/:to", getTrips);
+tripRouter.post("/confirm-trip", confirmTrip);
 export default tripRouter;
