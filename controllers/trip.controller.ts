@@ -56,6 +56,7 @@ export const createTrip = CatchAsyncError(
         from: getFrom.locationName,
         to: getTo.locationName,
         busType: selectedBusInfo.busType,
+        numberOfSeat: selectedBusInfo.numberOfSeat,
         price,
         departure_time,
       });
