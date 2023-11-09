@@ -1,9 +1,9 @@
 import mongoose, { Document, Model, Schema, Types } from "mongoose";
 
-interface IPassengers extends Document {
+export interface IPassengers extends Document {
   name: string;
-  phone: string;
-  seatNumber: string;
+  phoneNumber: string;
+  seatNumbers: string[];
 }
 
 const passengersSchema: Schema<IPassengers> = new mongoose.Schema({
@@ -11,18 +11,19 @@ const passengersSchema: Schema<IPassengers> = new mongoose.Schema({
     type: String,
     required: true,
   },
-  phone: {
+  phoneNumber: {
     type: String,
     required: true,
   },
-  seatNumber: {
-    type: String,
+  seatNumbers: {
+    type: [String],
     required: true,
   },
 });
 
 export interface ITrip extends Document {
   busId: Types.ObjectId;
+  numberOfSeat: string;
   fromId: Types.ObjectId;
   toId: Types.ObjectId;
   busName: string;
@@ -68,6 +69,10 @@ const tripSchema: Schema<ITrip> = new mongoose.Schema({
     required: true,
   },
   busType: {
+    type: String,
+    required: true,
+  },
+  numberOfSeat: {
     type: String,
     required: true,
   },
