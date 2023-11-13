@@ -32,10 +32,13 @@ export const createRoute = CatchAsyncError(
           .json({ success: false, message: "Route already available" });
       }
 
-      const newRoute = await routeLocationModel.create({
+      await routeLocationModel.create({
         locationName: name.toLocaleLowerCase(),
       });
-      return res.status(201).json({ success: true, newRoute });
+
+      const routeDoc = await routeLocationModel.find();
+
+      return res.status(201).json({ success: true, response: routeDoc });
     } catch (err) {
       return next(new ErrorHandler(err.message, 400));
     }
@@ -48,19 +51,18 @@ export const updateRoute = CatchAsyncError(
       const { routeId, updatedName } = req.body;
 
       //is available the route
-      const getRoute = await routeLocationModel.findOne({ _id: routeId });
-      if (!getRoute) {
+      const routeDoc = await routeLocationModel.findOne({ _id: routeId });
+      if (!routeDoc) {
         return res
           .status(400)
           .json({ success: false, message: "Route not found" });
       }
 
-      getRoute.locationName = updatedName;
-      getRoute.save();
+      routeDoc.locationName = updatedName;
+      await routeDoc.save();
 
-      return res
-        .status(200)
-        .json({ success: true, message: "Successfully updated" });
+      const newRouteDoc = await routeLocationModel.find();
+      return res.status(200).json({ success: true, response: newRouteDoc });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }
@@ -81,11 +83,11 @@ export const deleteRoute = CatchAsyncError(
       }
 
       // is this route is selected for trip
-      const getTrip = await tripModel.findOne({
+      const tripDoc = await tripModel.findOne({
         $or: [{ from: routeId }, { to: routeId }],
       });
 
-      if (!getTrip)
+      if (tripDoc)
         return res.status(400).json({
           success: false,
           message: "This location is already is in used for trip",
@@ -93,10 +95,11 @@ export const deleteRoute = CatchAsyncError(
 
       // delete the route
       await routeLocationModel.deleteOne({ _id: routeId });
+      const newRouteDoc = await routeLocationModel.find();
 
       return res.status(200).json({
         success: true,
-        message: "Successfully deleted",
+        response: newRouteDoc,
       });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));

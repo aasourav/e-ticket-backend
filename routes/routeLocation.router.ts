@@ -15,6 +15,6 @@ routeRouter.post("/create", createRoute);
 routeRouter.put("/update", updateRoute);
 routeRouter.get("/all-routes", getAllRoutes);
 routeRouter.get("/get-route/:routeName", getRoute);
-routeRouter.put("/delete/:routeId", deleteRoute);
+routeRouter.delete("/delete/:routeId", deleteRoute);
 routeRouter.get("/route-list", getRoutes);
 export default routeRouter;
