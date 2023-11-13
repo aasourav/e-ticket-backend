@@ -268,9 +268,12 @@ export const confirmTrip = CatchAsyncError(
       getTrip.passengers = [...getTrip.passengers, passenger];
       getTrip.save();
 
+      const sanitizeTrip = (d: string) => {
+        return d.charAt(0).toUpperCase() + d.slice(1);
+      };
       await sendMail({
         email,
-        subject: `${getTrip.busName} ticket`,
+        subject: `${getTrip.busName} bus ticket`,
         template: "bus-ticket.ejs",
         data: {
           passengerName: name,
@@ -278,8 +281,10 @@ export const confirmTrip = CatchAsyncError(
             "DD MMM, h:mm:ss A"
           ),
           seatNumber: seatNumbers?.join(", "),
-          destination: `${getTrip.from} - ${getTrip.to}`,
-          totalAmount,
+          destination: `${sanitizeTrip(getTrip.from)} - ${sanitizeTrip(
+            getTrip.to
+          )}`,
+          totalAmount: `${totalAmount} Tk`,
         },
       });
 

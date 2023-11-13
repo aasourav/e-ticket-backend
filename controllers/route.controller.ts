@@ -70,7 +70,7 @@ export const updateRoute = CatchAsyncError(
 export const deleteRoute = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { routeId } = req.body;
+      const { routeId } = req.params;
 
       // is this route is available
       const getRoute = await routeLocationModel.findOne({ _id: routeId });
@@ -85,7 +85,7 @@ export const deleteRoute = CatchAsyncError(
         $or: [{ from: routeId }, { to: routeId }],
       });
 
-      if (!!getTrip)
+      if (!getTrip)
         return res.status(400).json({
           success: false,
           message: "This location is already is in used for trip",
@@ -127,6 +127,17 @@ export const getRoute = CatchAsyncError(
         locationName: { $regex: routeName, $options: "i" },
       });
       return res.status(200).json({ success: true, response: getRoutes });
+    } catch (err: any) {
+      return next(new ErrorHandler(err.message, 400));
+    }
+  }
+);
+
+export const getAllRoutes = CatchAsyncError(
+  async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const routesDoc = await routeLocationModel.find();
+      return res.status(200).json({ success: true, response: routesDoc });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }

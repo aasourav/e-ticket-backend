@@ -1,6 +1,8 @@
 import express from "express";
 import {
   createRoute,
+  deleteRoute,
+  getAllRoutes,
   getRoute,
   getRoutes,
   updateRoute,
@@ -11,7 +13,8 @@ const routeRouter = express.Router();
 
 routeRouter.post("/create", createRoute);
 routeRouter.put("/update", updateRoute);
+routeRouter.get("/all-routes", getAllRoutes);
 routeRouter.get("/get-route/:routeName", getRoute);
-routeRouter.put("/delete", updateRoute);
+routeRouter.put("/delete/:routeId", deleteRoute);
 routeRouter.get("/route-list", getRoutes);
 export default routeRouter;
