@@ -92,8 +92,8 @@ export const deleteRoute = CatchAsyncError(
           success: false,
           message: "This location is already is in used for trip",
         });
-      return;
-      // delete the route
+
+        // delete the route
       await routeLocationModel.deleteOne({ _id: routeId });
       const newRouteDoc = await routeLocationModel.find();
 
