@@ -9,8 +9,8 @@ import {
 const busRouter = express.Router();
 
 busRouter.post("/create", createBus);
-busRouter.put("/toggle-available", toggleBusIsAvailableForTrip);
-busRouter.put("/update", updateBus);
-busRouter.delete("/delete", deleteBus);
+busRouter.patch("/toggle-available/:busId", toggleBusIsAvailableForTrip);
+busRouter.put("/update/:busId", updateBus);
+busRouter.delete("/delete/:busId", deleteBus);
 busRouter.get("/get-buses", getBuses);
 export default busRouter;
