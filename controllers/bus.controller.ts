@@ -24,7 +24,7 @@ export const createBus = CatchAsyncError(
         numberOfSeat,
       });
 
-      res.status(201).json({ success: true, createdBus });
+      return res.status(201).json({ success: true, createdBus });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }
@@ -34,7 +34,7 @@ export const createBus = CatchAsyncError(
 export const toggleBusIsAvailableForTrip = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { busId, isAvailableForTrip } = req.body;
+      const { busId } = req.params;
 
       const getBus = await busModel.findOne({ _id: busId });
 
@@ -44,10 +44,17 @@ export const toggleBusIsAvailableForTrip = CatchAsyncError(
           .json({ success: false, message: "Bus not found" });
 
       // if bus is in trip, we should cancel the trip
-      await tripModel.findOneAndDelete({ busId });
+      const tripDoc = await tripModel.findOne({ busId });
+      if (tripDoc) {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot possible toggle while bus is in trip",
+        });
+      }
 
-      getBus.isAvailableForTrip = isAvailableForTrip;
+      getBus.isAvailableForTrip = !getBus.isAvailableForTrip;
       getBus.save();
+      return res.status(200).json({ success: true, message: "Success" });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }
@@ -57,7 +64,9 @@ export const toggleBusIsAvailableForTrip = CatchAsyncError(
 export const updateBus = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { busId, busName, busType, numberOfSeat } = req.body;
+      const { busName, busType, numberOfSeat } = req.body;
+      const { busId } = req.params;
+      
       const getBus = await busModel.findOne({ _id: busId });
 
       if (!getBus)
@@ -83,7 +92,7 @@ export const updateBus = CatchAsyncError(
 export const deleteBus = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { busId } = req.body;
+      const { busId } = req.params;
       const getBus = await busModel.findOne({ _id: busId });
 
       if (!getBus)
