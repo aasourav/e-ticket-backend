@@ -50,7 +50,7 @@ export const createTrip = CatchAsyncError(
           .json({ success: false, message: "Route not found" });
       }
 
-      const createdBus = await tripModel.create({
+      const createTrip = await tripModel.create({
         busId,
         fromId,
         toId,
@@ -68,7 +68,7 @@ export const createTrip = CatchAsyncError(
         { $set: { isTripBooked: true } }
       );
 
-      res.status(201).json({ success: true, createdBus });
+      res.status(201).json({ success: true, createTrip });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }
@@ -76,10 +76,11 @@ export const createTrip = CatchAsyncError(
 );
 
 // change bus
-export const changeTripBus = CatchAsyncError(
+export const updateTrip = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { newBusId, tripId } = req.body;
+      const { busId: newBusId, fromId, toId, departure_time, price } = req.body;
+      const { tripId } = req.params;
 
       //is trip id is available
       const getTrip = await tripModel.findOne({ _id: tripId });
@@ -88,32 +89,62 @@ export const changeTripBus = CatchAsyncError(
           .status(400)
           .json({ success: false, message: "Trip not found" });
 
-      const selectedOldBusInfo = await busModel.findOne({
-        _id: getTrip.busId,
-      });
-      if (!selectedOldBusInfo)
-        return res
-          .status(400)
-          .json({ success: false, message: "Bus not found" });
-
-      const selectedNewBusInfo = await busModel.findOne({
-        _id: newBusId,
-      });
-      if (!selectedNewBusInfo)
-        return res
-          .status(400)
-          .json({ success: false, message: "New bus not found" });
-
-      if (!selectedNewBusInfo.isAvailableForTrip)
-        return res
-          .status(400)
-          .json({ success: false, message: "New bus is not fit" });
-
-      if (selectedNewBusInfo.isTripBooked)
-        return res.status(400).json({
-          success: false,
-          message: "New bus is already booked for trip",
+      if (getTrip.busId !== newBusId && newBusId) {
+        const selectedOldBusInfo = await busModel.findOne({
+          _id: getTrip.busId,
         });
+        if (!selectedOldBusInfo)
+          return res
+            .status(400)
+            .json({ success: false, message: "Bus not found" });
+
+        const selectedNewBusInfo = await busModel.findOne({
+          _id: newBusId,
+        });
+        if (!selectedNewBusInfo)
+          return res
+            .status(400)
+            .json({ success: false, message: "New bus not found" });
+
+        if (!selectedNewBusInfo.isAvailableForTrip)
+          return res
+            .status(400)
+            .json({ success: false, message: "New bus is not fit" });
+
+        if (selectedNewBusInfo.isTripBooked)
+          return res.status(400).json({
+            success: false,
+            message: "New bus is already booked for trip",
+          });
+        getTrip.busName = selectedNewBusInfo.busName;
+      }
+
+      //is route id is available
+      if (fromId && fromId !== getTrip.fromId) {
+        const fromDoc = await routeLocationModel.findOne({ _id: fromId });
+        if (!fromDoc) {
+          return res.status(400).json({
+            success: false,
+            message: "Source Location not in database.",
+          });
+        } else {
+          getTrip.from = fromDoc.locationName;
+          getTrip.fromId = fromDoc._id;
+        }
+      }
+
+      if (toId && toId !== getTrip.toId) {
+        const toDoc = await routeLocationModel.findOne({ _id: toId });
+        if (!toDoc) {
+          return res.status(400).json({
+            success: false,
+            message: "Source Location not in database.",
+          });
+        } else {
+          getTrip.to = toDoc.locationName;
+          getTrip.toId = toDoc._id;
+        }
+      }
 
       await busModel.findByIdAndUpdate(
         { _id: newBusId },
@@ -126,11 +157,11 @@ export const changeTripBus = CatchAsyncError(
       );
 
       getTrip.busId = newBusId;
-      getTrip.save();
+      if (departure_time) getTrip.departure_time = departure_time;
+      if (price) getTrip.price = price;
+      const tripDoc = await getTrip.save();
 
-      return res
-        .status(200)
-        .json({ success: true, message: "Bus has been changed" });
+      return res.status(200).json({ success: true, tripDoc });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }
@@ -181,7 +212,7 @@ export const getPassengers = CatchAsyncError(
 // delete trip
 export const deleteTrip = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { tripId } = req.body;
+    const { tripId } = req.params;
     try {
       const getTrip = await tripModel.findOne({ _id: tripId });
       if (!getTrip)
@@ -193,7 +224,7 @@ export const deleteTrip = CatchAsyncError(
       const busId = getTrip.busId;
       await busModel.findOneAndUpdate(
         { _id: busId },
-        { $set: { isAvailableForTrip: true } }
+        { $set: { isTripBooked: false } }
       );
 
       await tripModel.findOneAndDelete({ _id: tripId });
@@ -201,6 +232,17 @@ export const deleteTrip = CatchAsyncError(
       return res
         .status(200)
         .json({ success: true, message: "Trip successfully removed" });
+    } catch (err: any) {
+      return next(new ErrorHandler(err.message, 400));
+    }
+  }
+);
+
+export const getAllTrips = CatchAsyncError(
+  async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const getTrips = await tripModel.find();
+      return res.status(200).json({ getTrips });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }
