@@ -262,7 +262,7 @@ export const getTrips = CatchAsyncError(
       if (!getTrips.length)
         return res
           .status(400)
-          .json({ success: true, message: "Trip not found" });
+          .json({ success: false, message: "Trip not found" });
 
       return res.status(200).json(getTrips);
     } catch (err: any) {
@@ -331,6 +331,35 @@ export const confirmTrip = CatchAsyncError(
       });
 
       return res.status(200).json({ success: true, getTrip });
+    } catch (err: any) {
+      return next(new ErrorHandler(err.message, 400));
+    }
+  }
+);
+
+export const passengerTripCancel = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { tripId, passengerId } = req.params;
+      const { passengerData } = req.body;
+
+      const tripDoc = await tripModel.findOne({ _id: tripId });
+      if (!tripDoc) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Trip not found" });
+      }
+
+      tripDoc.passengers.forEach((passenger) => {
+        const passengerDocId = JSON.stringify(passenger._id);
+        if (JSON.parse(passengerDocId) === passengerId) {
+          passenger.seatNumbers = passengerData;
+        }
+      });
+
+      await tripDoc.save();
+
+      return res.status(200).json({ success: true, tripDoc });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }
