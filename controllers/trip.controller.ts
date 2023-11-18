@@ -255,14 +255,12 @@ export const getTrips = CatchAsyncError(
       const { from, to } = req.params as { from: string; to: string };
 
       const getTrips = await tripModel.find({
-        from: from.toLocaleLowerCase(),
-        to: to.toLocaleLowerCase(),
+        fromId: from,
+        toId: to,
       });
 
       if (!getTrips.length)
-        return res
-          .status(400)
-          .json({ success: true, message: "Trip not found" });
+        return next(new ErrorHandler("Trip not found", 400));
 
       return res.status(200).json(getTrips);
     } catch (err: any) {
@@ -319,9 +317,7 @@ export const confirmTrip = CatchAsyncError(
         template: "bus-ticket.ejs",
         data: {
           passengerName: name,
-          departureTime: dayjs(getTrip.departure_time).format(
-            "DD MMM, h:mm:ss A"
-          ),
+          departureTime: dayjs(getTrip.departure_time).format("DD MMM, h:mm A"),
           seatNumber: seatNumbers?.join(", "),
           destination: `${sanitizeTrip(getTrip.from)} - ${sanitizeTrip(
             getTrip.to
@@ -331,6 +327,35 @@ export const confirmTrip = CatchAsyncError(
       });
 
       return res.status(200).json({ success: true, getTrip });
+    } catch (err: any) {
+      return next(new ErrorHandler(err.message, 400));
+    }
+  }
+);
+
+export const passengerTripCancel = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { tripId, passengerId } = req.params;
+      const { passengerData } = req.body;
+
+      const tripDoc = await tripModel.findOne({ _id: tripId });
+      if (!tripDoc) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Trip not found" });
+      }
+
+      tripDoc.passengers.forEach((passenger) => {
+        const passengerDocId = JSON.stringify(passenger._id);
+        if (JSON.parse(passengerDocId) === passengerId) {
+          passenger.seatNumbers = passengerData;
+        }
+      });
+
+      await tripDoc.save();
+
+      return res.status(200).json({ success: true, tripDoc });
     } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }

@@ -8,6 +8,7 @@ import {
   getAllTrips,
   getPassengers,
   getTrips,
+  passengerTripCancel,
 } from "../controllers/trip.controller";
 // import { isAuthenticated } from "../middleware/auth";
 
@@ -18,6 +19,10 @@ tripRouter.put("/update", createTrip);
 tripRouter.put("/update-trip/:tripId", updateTrip);
 tripRouter.delete("/delete/:tripId", deleteTrip);
 tripRouter.get("/get-passengers", getPassengers);
+tripRouter.put(
+  "/trip-cancel/trip/:tripId/passenger/:passengerId",
+  passengerTripCancel
+);
 tripRouter.put("/book-seat", bookSeat);
 tripRouter.get("/trip-list/from/:from/to/:to", getTrips);
 tripRouter.get("/get-all-trips", getAllTrips);
