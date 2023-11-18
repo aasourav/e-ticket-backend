@@ -255,14 +255,12 @@ export const getTrips = CatchAsyncError(
       const { from, to } = req.params as { from: string; to: string };
 
       const getTrips = await tripModel.find({
-        from: from.toLocaleLowerCase(),
-        to: to.toLocaleLowerCase(),
+        fromId: from,
+        toId: to,
       });
 
       if (!getTrips.length)
-        return res
-          .status(400)
-          .json({ success: false, message: "Trip not found" });
+        return next(new ErrorHandler("Trip not found", 400));
 
       return res.status(200).json(getTrips);
     } catch (err: any) {
@@ -319,9 +317,7 @@ export const confirmTrip = CatchAsyncError(
         template: "bus-ticket.ejs",
         data: {
           passengerName: name,
-          departureTime: dayjs(getTrip.departure_time).format(
-            "DD MMM, h:mm A"
-          ),
+          departureTime: dayjs(getTrip.departure_time).format("DD MMM, h:mm A"),
           seatNumber: seatNumbers?.join(", "),
           destination: `${sanitizeTrip(getTrip.from)} - ${sanitizeTrip(
             getTrip.to
