@@ -320,7 +320,7 @@ export const confirmTrip = CatchAsyncError(
         data: {
           passengerName: name,
           departureTime: dayjs(getTrip.departure_time).format(
-            "DD MMM, h:mm:ss A"
+            "DD MMM, h:mm A"
           ),
           seatNumber: seatNumbers?.join(", "),
           destination: `${sanitizeTrip(getTrip.from)} - ${sanitizeTrip(
