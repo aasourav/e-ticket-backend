@@ -27,10 +27,25 @@ const corsOptions = {
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
 };
+
+// app.use((_req, res, next) => {
+//   res.setHeader("Access-Control-Allow-Origin", "*");
+
+//   res.setHeader(
+//     "Access-Control-Allow-Methods",
+//     "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+//   );
+
+//   res.setHeader("Access-Control-Allow-Headers", "*");
+
+//   next();
+// });
+
 app.use(cors(corsOptions));
 
 //testing api
 app.get("/test", (req: Request, res: Response) => {
+  res.cookie("ac", "hi bro");
   res.status(200).json({
     success: true,
     message: "Api is working well",
