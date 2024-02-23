@@ -7,7 +7,7 @@
     "start": "node build/server.js",
     "dev": "ts-node-dev --respawn --transpile-only server.ts",
     "lint": "eslint . --ext .js --ext .ts",
-    "clean": "rm -rf ./build && rm -f ./tsconfig.tsbuildinfo",
+    "clean": "rm -rf /build && rm -f /tsconfig.tsbuildinfo",
     "build": "yarn clean && tsc"
   },
   "dependencies": {

@@ -39,7 +39,7 @@ export const createRoute = CatchAsyncError(
       const routeDoc = await routeLocationModel.find();
 
       return res.status(201).json({ success: true, response: routeDoc });
-    } catch (err) {
+    } catch (err: any) {
       return next(new ErrorHandler(err.message, 400));
     }
   }
