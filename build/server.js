@@ -10,7 +10,7 @@ const logger_1 = __importDefault(require("./utils/logger"));
 dotenv_1.default.config();
 app_1.app.listen(process.env.PORT, () => {
     // console.log("server is running on port ", process.env.PORT);
-    logger_1.default.info(`server is running on port: ${process.env.PORT}`);
+    logger_1.default.info(`server is : ${process.env.PORT} ${db_1.connectionString}`);
     (0, db_1.connectDb)();
 });
 //# sourceMappingURL=server.js.map

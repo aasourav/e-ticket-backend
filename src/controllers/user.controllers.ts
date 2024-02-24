@@ -37,6 +37,24 @@ interface IRegistration {
   password: string;
   avatar?: string;
 }
+
+export const createAdmin = CatchAsyncError(
+  async (_: Request, res: Response, next: NextFunction) => {
+    const user: IRegistration = {
+      name: "admin",
+      email: "admin@gmail.com",
+      password: "123456",
+    };
+
+    try {
+      await userModel.create(user);
+      res.send("Admin create success");
+    } catch (error: any) {
+      next(new ErrorHandler(error.message, 404));
+    }
+  }
+);
+
 export const registrationUser = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -175,7 +193,7 @@ export const updateAccessToken = CatchAsyncError(
       }
 
       // const session = await redis.get(decode.id as string);
-      const session = ""
+      const session = "";
       if (!session) {
         return next(new ErrorHandler("User not found", 400));
       }
@@ -296,4 +314,3 @@ export const changePassword = CatchAsyncError(
     }
   }
 );
-
